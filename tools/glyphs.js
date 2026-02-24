@@ -125,6 +125,23 @@ const loadGlyphNameLists = async (s) => {
 
 const glyphNameLists = await loadGlyphNameLists('dvips-all.enc');
 
+const processOtfFile = async (filePath, tables) => {
+    const basename = path.basename(filePath, '.otf');
+    if (!glyphNameLists[basename]) return;
+
+    console.log(`Processing ${basename}...`);
+    const buffer = await fs.promises.readFile(filePath);
+    const font = Font.create(buffer, { type: 'otf', hinting: true, kerning: true });
+
+    tables[basename] = {};
+    for (const glyph of font.get().glyf) {
+        if (!(glyph.unicode instanceof Array)) continue;
+        const unicode = Math.max(...glyph.unicode);
+        const codePoint = glyphNameLists[basename].findIndex((c) => c === glyph.name);
+        if (codePoint !== -1) tables[basename][codePoint] = unicode;
+    }
+};
+
 const zipFile = path.join(tmpDir, 'bakoma.zip');
 const file = fs.createWriteStream(zipFile);
 https.get('https://us.mirrors.cicku.me/ctan/fonts/cm/ps-type1/bakoma.zip', (response) => {
@@ -136,24 +153,21 @@ https.get('https://us.mirrors.cicku.me/ctan/fonts/cm/ps-type1/bakoma.zip', (resp
 
         const tables = {};
 
+        // Process BaKoMa fonts from zip
         for (const file of files) {
-            const basename = path.basename(file.path, '.otf');
-            if (!glyphNameLists[basename]) continue;
+            await processOtfFile(path.join(tmpDir, file.path), tables);
+        }
 
-            console.log(`Processing ${basename}...`);
-            const buffer = await fs.promises.readFile(path.join(tmpDir, file.path));
-            const font = Font.create(buffer, { type: 'otf', hinting: true, kerning: true });
-
-            tables[basename] = {};
-            for (const glyph of font.get().glyf) {
-                if (!(glyph.unicode instanceof Array)) continue;
-                const unicode = Math.max(...glyph.unicode);
-                const codePoint = glyphNameLists[basename].findIndex((c) => c === glyph.name);
-                if (codePoint !== -1) tables[basename][codePoint] = unicode;
+        // Process local OTF fonts from additionalFonts directory
+        const additionalFontsDir = path.join(import.meta.dirname, 'additionalFonts');
+        if (fs.existsSync(additionalFontsDir)) {
+            const localOtfFiles = fs.readdirSync(additionalFontsDir).filter(f => f.endsWith('.otf'));
+            for (const file of localOtfFiles) {
+                await processOtfFile(path.join(additionalFontsDir, file), tables);
             }
         }
 
-        console.log(`Processed ${Object.keys(tables).length} fonts.`);
+        console.log(`Processed ${Object.keys(tables).length} fonts from OTF files.`);
 
         const encodingsFile = await fs.promises.open(path.join(import.meta.dirname, '../src/tfm/encodings.json'), 'w');
         await fs.promises.writeFile(encodingsFile, JSON.stringify(tables));

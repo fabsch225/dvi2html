@@ -99,6 +99,16 @@ class TFMParser {
     // BADBAD
     read_fix_word(p?: number) {
         if (p) this.position = p;
+        
+        //worse?
+        const bytesAvailable = this.stream.length - this.position;
+        if (bytesAvailable < 4) {
+            const buffer = Buffer.alloc(4);
+            this.stream.copy(buffer, 0, this.position, this.position + bytesAvailable);
+            this.position = this.position + 4;
+            return buffer.readUInt32BE(0);
+        }
+        
         const result = this.stream.readUInt32BE(this.position);
         this.position = this.position + 4;
         return result;
