@@ -167,7 +167,7 @@ https.get('https://us.mirrors.cicku.me/ctan/fonts/cm/ps-type1/bakoma.zip', (resp
             }
         }
 
-        console.log(`Processed ${Object.keys(tables).length} fonts from OTF files.`);
+        console.log(`Processed ${Object.keys(tables).length} fonts.`);
 
         const encodingsFile = await fs.promises.open(path.join(import.meta.dirname, '../src/tfm/encodings.json'), 'w');
         await fs.promises.writeFile(encodingsFile, JSON.stringify(tables));

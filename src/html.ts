@@ -48,11 +48,8 @@ export default class HTMLMachine extends Machine {
         const left = this.position.h * this.pointsPerDviUnit;
         const top = this.position.v * this.pointsPerDviUnit;
 
-        this.svgDepth += (svg.match(/<svg.*>/g) ?? []).length;
-        this.svgDepth -= (svg.match(/<\/svg.*>/g) ?? []).length;
-
         if (svg.includes('<svg beginpicture>')) {
-            if (this.svgDepth > 1) {
+            if (this.svgDepth > 0) {
                 // In this case we are inside another svg element so drop the svg start tags.
                 svg = svg.replace('<svg beginpicture>', '');
             } else {
@@ -75,38 +72,46 @@ export default class HTMLMachine extends Machine {
         svg = svg.replace(/{\?x}/g, left.toString());
         svg = svg.replace(/{\?y}/g, top.toString());
 
-        this.output.write(svg);
-    }
+        this.svgDepth += (svg.match(/<svg.*>/g) || []).length;
+        this.svgDepth -= (svg.match(/<\/svg.*>/g) || []).length;
 
-    constructor(o: Writable) {
-        super();
-        this.output = o;
-        this.color = 'black';
-        this.colorStack = [];
-        this.svgDepth = 0;
-    }
+    this.output.write( svg );
+  }
+  
+  constructor( o : Writable ) {
+    super();
+    this.output = o;
+    this.color = 'black';
+    this.colorStack = [];
+    this.svgDepth = 0;
+  }
 
-    preamble(numerator: number, denominator: number, magnification: number, _comment: string) {
-        this.pointsPerDviUnit = (((magnification * numerator) / 1000.0 / denominator) * 72.27) / 100000.0 / 2.54;
-    }
+  preamble ( numerator : number, denominator : number, magnification : number, comment : string ) {
+    let dviUnit = magnification * numerator / 1000.0 / denominator;
 
-    putRule(rule: Rule) {
-        const a = rule.a * this.pointsPerDviUnit;
-        const b = rule.b * this.pointsPerDviUnit;
-        const left = this.position.h * this.pointsPerDviUnit;
-        const bottom = this.position.v * this.pointsPerDviUnit;
-        const top = bottom - a;
+    let resolution = 300.0; // ppi
+    let tfm_conv = (25400000.0 / numerator) * (denominator / 473628672) / 16.0;
+    let conv = (numerator / 254000.0) * (resolution / denominator);
+    conv = conv * (magnification / 1000.0);
 
-        this.output.write(
-            `<rect x="${left.toString()}" y="${top.toString()}" width="${b.toString()}" ` +
-                `height="${a.toString()}" fill="${this.color.toString()}"${this.matrix.toSVGTransform()}></rect>`
-        );
-    }
+    this.pointsPerDviUnit = dviUnit * 72.27 / 100000.0 / 2.54;
+  }
 
-    putText(text: Buffer): number {
-        let textWidth = 0;
-        let textHeight = 0;
-        let textDepth = 0;
+  putRule( rule : Rule ) {
+    let a = rule.a * this.pointsPerDviUnit;
+    let b = rule.b * this.pointsPerDviUnit;
+    let left = this.position.h * this.pointsPerDviUnit;
+    let bottom = this.position.v * this.pointsPerDviUnit;
+    let top = bottom - a;
+
+	this.output.write(`<rect x="${left}" y="${top}" width="${b}" height="${a}" fill="${this.color}"` +
+					  `${this.matrix.toSVGTransform()}></rect>`);
+  }
+
+  putText( text : Buffer ) : number {
+    let textWidth = 0;
+    let textHeight = 0;
+    let textDepth = 0;
 
         let htmlText = '';
 
