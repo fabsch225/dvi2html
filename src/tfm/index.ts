@@ -102,6 +102,7 @@ class TFMParser {
         
         const bytesAvailable = this.stream.length - this.position;
         if (bytesAvailable < 4) {
+            console.warn("Fix word read with only " + bytesAvailable + " bytes available, expected 4. Returning 0.");
             const buffer = Buffer.alloc(4);
             this.stream.copy(buffer, 0, this.position, this.position + bytesAvailable);
             this.position = this.position + 4;
