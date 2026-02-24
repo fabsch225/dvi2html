@@ -112,7 +112,8 @@ const execute = (token, stack, state, list, lists) => {
 
 const loadGlyphNameLists = async (s) => {
     //const filename = await kpsewhich(s);
-    const filename = path.join(import.meta.dirname, '../../', s);
+    //i checked in a modified version of dvips-all.enc where i hacked in the eulerfonts
+    const filename = path.join(import.meta.dirname, s);
     const encoding = (await fs.promises.readFile(filename)).toString();
     const lists = {};
     const stack = [];
