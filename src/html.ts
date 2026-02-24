@@ -122,8 +122,9 @@ export default class HTMLMachine extends Machine {
             textWidth += metrics.width;
             textHeight = Math.max(textHeight, metrics.height);
             textDepth = Math.max(textDepth, metrics.depth);
-
+            if (!(this.font.name in glyphs)) throw new Error(`No glyphs found for font ${this.font.name}`);
             const codes = glyphs[this.font.name as keyof typeof glyphs] as Record<string, number>;
+            if (!(c.toString() in codes)) throw new Error(`No codepoint found for character ${c.toString()} in font ${this.font.name}`);
             const codepoint = codes[c.toString()];
             htmlText += `&#x${codepoint.toString(16).padStart(4, '0')};`;
         }

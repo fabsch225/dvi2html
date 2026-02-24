@@ -111,7 +111,8 @@ const execute = (token, stack, state, list, lists) => {
 };
 
 const loadGlyphNameLists = async (s) => {
-    const filename = await kpsewhich(s);
+    //const filename = await kpsewhich(s);
+    const filename = path.join(import.meta.dirname, '../../', s);
     const encoding = (await fs.promises.readFile(filename)).toString();
     const lists = {};
     const stack = [];
@@ -158,11 +159,12 @@ https.get('https://us.mirrors.cicku.me/ctan/fonts/cm/ps-type1/bakoma.zip', (resp
             await processOtfFile(path.join(tmpDir, file.path), tables);
         }
 
-        // Process local OTF fonts from additionalFonts directory
+        // Process additionalFonts directory
         const additionalFontsDir = path.join(import.meta.dirname, 'additionalFonts');
         if (fs.existsSync(additionalFontsDir)) {
-            const localOtfFiles = fs.readdirSync(additionalFontsDir).filter(f => f.endsWith('.otf'));
+            const localOtfFiles = fs.readdirSync(additionalFontsDir, {recursive: true}).filter(f => f.endsWith('.otf'));
             for (const file of localOtfFiles) {
+                console.log(path.join(additionalFontsDir, file))
                 await processOtfFile(path.join(additionalFontsDir, file), tables);
             }
         }
