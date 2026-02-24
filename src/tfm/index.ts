@@ -100,7 +100,6 @@ class TFMParser {
     read_fix_word(p?: number) {
         if (p) this.position = p;
         
-        //worse?
         const bytesAvailable = this.stream.length - this.position;
         if (bytesAvailable < 4) {
             const buffer = Buffer.alloc(4);
