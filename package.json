@@ -1,6 +1,6 @@
 {
     "name": "@fabsch225/dvi2html",
-    "version": "1.0.0",
+    "version": "0.8.0",
     "description": "Convert DVI to HTML5/CSS",
     "author": "Jim Fowler",
     "license": "GPL-3.0",
