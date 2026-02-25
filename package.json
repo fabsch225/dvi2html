@@ -20,6 +20,7 @@
         "import": "./dist/index.js"
     },
     "scripts": {
+        "prepare": "npm run build",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "lint": "eslint . --fix",
