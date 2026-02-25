@@ -1,11 +1,12 @@
 {
-    "name": "@drgrice1/dvi2html",
-    "version": "0.0.7-beta4",
+    "name": "@fabsch225/dvi2html",
+    "version": "1.0.0",
     "description": "Convert DVI to HTML5/CSS",
     "author": "Jim Fowler",
     "license": "GPL-3.0",
     "contributors": [
-        "Glenn Rice"
+        "Glenn Rice",
+        "Fabian Schuller"
     ],
     "repository": {
         "type": "git",
